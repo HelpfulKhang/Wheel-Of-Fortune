@@ -1,129 +1,106 @@
 import * as PIXI from 'pixi.js';
+import { Wheel } from './Wheel.js';
+import { Controller } from './Controller.js';
 
-// --- XỬ LÝ CSS ĐỂ XÓA VIỀN TRẮNG ---
+// CSS Reset
 const style = document.createElement('style');
-style.innerHTML = `
-    body { margin: 0; padding: 0; overflow: hidden; background-color: #000; }
-    canvas { display: block; }
-`;
+style.innerHTML = `body { margin: 0; padding: 0; overflow: hidden; background-color: #000; } canvas { display: block; margin: 0 auto; }`;
 document.head.appendChild(style);
 
 const app = new PIXI.Application();
 
-const WEDGE_NAMES = [
-    '500-Green', '600-Pink', '700-Red', 'Bankrupt', 
-    '650-Orange', '500-Purple', '800-Red', 'Lose-a-Turn-White',
-    '700-Yellow', '900-Orange', '2500', 'Bankrupt',
-    '600-Blue', '700-Red', '600-Pink', '550-Blue',
-    '500-Pink', 'Mystery', '700-Yellow', 'Bankrupt',
-    '650-Purple', 'Free-Play', '650-Pink', 'Bankrupt'
+const WEDGE_LIST = [
+    '2500', '3500', '500-Green', '500-Pink', '500-Purple', '5000', 
+    '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', 
+    '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', 
+    '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 
+    'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'Wild-Card'
 ];
 
 async function init() {
-    // 1. Khởi tạo với độ phân giải Full HD
     await app.init({ 
-        width: 1920, 
-        height: 1080,
-        backgroundColor: 0x0c0c0c,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
+        width: 1920, height: 1080, backgroundColor: 0x050505, antialias: true,
+        resolution: window.devicePixelRatio || 1, autoDensity: true
     });
     document.body.appendChild(app.canvas);
 
-    // Tự động scale canvas để vừa với màn hình trình duyệt mà vẫn giữ tỷ lệ 16:9
-    const resizeCanvas = () => {
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        const scale = Math.min(screenWidth / 1920, screenHeight / 1080);
+    const handleResize = () => {
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
         app.canvas.style.width = `${1920 * scale}px`;
         app.canvas.style.height = `${1080 * scale}px`;
     };
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    window.addEventListener('resize', handleResize); handleResize();
 
-    // 2. Tải Texture
+    // Load Textures
     const textures = {};
-    for (const name of [...new Set(WEDGE_NAMES)]) {
+    for (const name of WEDGE_LIST) {
         textures[name] = await PIXI.Assets.load(`/src/assets/wedge/${name}.png`);
     }
 
-    // 3. Thông số
-    const hubRadius = 333;      
-    const wedgeHeight = 455;    
-    const totalWedges = 24;
-    const angleStep = (Math.PI * 2) / totalWedges; // 15 độ
-    const wheelScale = 0.6; // Điều chỉnh scale để nón 1576px lọt thỏm trong 1080px chiều cao
+    // 1. Khởi tạo Wheel
+    const wheel = new Wheel(app, textures);
 
-    const wheelGroup = new PIXI.Container();
-    wheelGroup.x = 1920 / 2;
-    wheelGroup.y = 1080 / 2 + 50; // Đẩy xuống một chút để nhường chỗ cho kim
-    wheelGroup.scale.set(wheelScale);
-    app.stage.addChild(wheelGroup);
+    // 2. Khởi tạo 3 Kim (Phải gọi sau khi wheel đã init để lấy tọa độ)
+    const tickerObjects = setupTickers(app, wheel);
 
-    const wheelSpin = new PIXI.Container();
-    wheelGroup.addChild(wheelSpin);
+    // 3. Khởi tạo Meter (Sửa lại logic vẽ)
+    const meterUI = setupMeterUI(app);
 
-    // Vẽ nón
-    WEDGE_NAMES.forEach((name, i) => {
-        const wedgeWrapper = new PIXI.Container();
-        wedgeWrapper.rotation = i * angleStep;
-        const sprite = new PIXI.Sprite(textures[name]);
-        sprite.anchor.set(0.5, 1); 
-        sprite.y = -hubRadius; 
-        wedgeWrapper.addChild(sprite);
-        wheelSpin.addChild(wedgeWrapper);
+    // 4. Khởi tạo Controller (Phím 6, 7, 8, 9)
+    const controller = new Controller(wheel, meterUI);
+
+    app.ticker.add((time) => {
+        const delta = time.deltaTime;
+        controller.update(delta);
+        wheel.update(delta, tickerObjects);
     });
+}
 
-    // Trục giữa
-    const hub = new PIXI.Graphics()
-        .circle(0, 0, hubRadius)
-        .fill({ color: 0xffd700 })
-        .stroke({ width: 10, color: 0xffffff, alpha: 0.5 });
-    wheelGroup.addChild(hub);
-
-    // 4. TẠO 3 CÂY KIM (TICKERS)
+function setupTickers(app, wheel) {
     const createTicker = (color) => {
-        const container = new PIXI.Container();
         const g = new PIXI.Graphics()
-            .poly([
-                -15, 0,  // Cạnh trái
-                15, 0,   // Cạnh phải
-                0, 50    // Mũi nhọn (chỉ xuống)
-            ])
+            .poly([-15, 0, 15, 0, 0, 50])
             .fill(color)
             .stroke({ width: 3, color: 0xffffff });
-        container.addChild(g);
-        return container;
+        return g;
     };
 
-    const redTicker = createTicker(0xff0000);    // Đỏ (Trái)
-    const yellowTicker = createTicker(0xffff00); // Vàng (Giữa)
-    const blueTicker = createTicker(0x0000ff);   // Xanh dương (Phải)
+    const colors = [0xff0000, 0xffff00, 0x0000ff];
+    const tickerAngles = [-wheel.angleStep, 0, wheel.angleStep];
+    const tickers = [];
 
-    const tickers = [redTicker, yellowTicker, blueTicker];
-    const tickerAngles = [-angleStep, 0, angleStep]; // -15, 0, 15 độ
-
-    const totalRadius = (wedgeHeight + hubRadius) * wheelScale;
-
-    tickers.forEach((ticker, index) => {
-        const angle = tickerAngles[index];
+    tickerAngles.forEach((angle, i) => {
+        const t = createTicker(colors[i]);
+        // Tọa độ tuyệt đối dựa trên wheel.group
+        t.x = wheel.group.x + Math.sin(angle) * wheel.totalRadius;
+        t.y = wheel.group.y - Math.cos(angle) * wheel.totalRadius - 50; 
+        t.rotation = angle;
         
-        // Tính toán vị trí để đầu kim vừa chạm vào nón
-        // Dùng lượng giác để tính tọa độ x, y dựa trên góc
-        ticker.x = wheelGroup.x + Math.sin(angle) * totalRadius;
-        ticker.y = wheelGroup.y - Math.cos(angle) * totalRadius - 50; // -5 để chừa khe hở cực nhỏ
+        // Đảm bảo kim nằm trên cùng
+        t.zIndex = 100;
+        app.stage.addChild(t);
         
-        // Xoay kim hướng về tâm vòng quay
-        ticker.rotation = angle;
-        
-        app.stage.addChild(ticker);
+        tickers.push({ container: t, baseAngle: angle, lastStep: 0 });
     });
+    return tickers;
+}
 
-    // Game Loop test xoay
-    app.ticker.add((time) => {
-        wheelSpin.rotation += 0.005 * time.deltaTime;
-    });
+function setupMeterUI(app) {
+    const graphics = new PIXI.Graphics();
+    graphics.x = 100;
+    graphics.y = 300;
+    app.stage.addChild(graphics);
+
+    return {
+        draw: (power) => {
+            graphics.clear()
+                .rect(0, 0, 40, 400).fill(0x333333).stroke({ width: 2, color: 0xffffff }) // Khung
+                .rect(2, 398, 36, -396 * power).fill(power > 0.8 ? 0xff3333 : 0x33ff33); // Thanh lực
+        },
+        clear: () => {
+            graphics.clear().rect(0, 0, 40, 400).fill(0x333333).stroke({ width: 2, color: 0xffffff });
+        }
+    };
 }
 
 init();
