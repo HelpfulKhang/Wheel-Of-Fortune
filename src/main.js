@@ -14,7 +14,7 @@ const WEDGE_LIST = [
     '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', 
     '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', 
     '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 
-    'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'Wild-Card'
+    'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'MDW-Front', 'Power', 'Vault'
 ];
 
 async function init() {
