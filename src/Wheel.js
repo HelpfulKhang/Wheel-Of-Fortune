@@ -61,10 +61,10 @@ export class Wheel {
                 const overlay = new PIXI.Sprite(this.textures[overlayName]);
                 overlay.anchor.set(0.5, 0.5);
                 // Vị trí góc trên của wedge
-                overlay.y = -(this.hubRadius + this.wedgeHeight - 80);
+                overlay.y = -(this.hubRadius + this.wedgeHeight - 50);
 
                 if (overlayName === 'Wild-Card') {
-                    overlay.scale.set(0.6); // Dọc
+                    overlay.scale.set(0.5);
                 } else if (overlayName === 'Half-Car') {
                     overlay.scale.set(0.5);
                 }
