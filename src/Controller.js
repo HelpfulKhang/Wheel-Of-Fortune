@@ -1,10 +1,11 @@
 import { gsap } from 'gsap';
 
 export class Controller {
-    constructor(wheel, scoreBoard, tickers) {
+    constructor(wheel, scoreBoard, tickers, puzzleBoard) {
         this.wheel = wheel;
         this.scoreBoard = scoreBoard;
         this.tickers = tickers;
+        this.puzzleBoard = puzzleBoard;
         this.isCharging = false;
         this.chargePower = 0;
         this.chargeDir = 1;
@@ -14,6 +15,7 @@ export class Controller {
 
         // Khởi tạo âm thanh
         this.sounds = {
+            start: new Audio('/src/assets/sound/start.mp3'),
             menu: new Audio('/src/assets/sound/menu.mp3'),
             spin: new Audio('/src/assets/sound/spin.mp3'),
             bonusSpin: new Audio('/src/assets/sound/bonusspin.mp3'),
@@ -108,6 +110,17 @@ export class Controller {
 
                 // --- HỆ THỐNG & MEDIA ---
                 case 'KeyC': this.toggleMenu(); break;
+                case 'Digit1': // Hiện Board
+                    this.wheel.group.visible = false;
+                    this.tickers.forEach(t => t.container.visible = false); // Ẩn cả kim
+                    this.puzzleBoard.group.visible = true;
+                    break;
+                case 'Digit2': // Hiện Wheel
+                    this.wheel.group.visible = true;
+                    this.tickers.forEach(t => t.container.visible = true);
+                    this.puzzleBoard.group.visible = false;
+                    break;
+                case 'Digit3': this.sounds.start.play(); break;
                 case 'Digit6': this.wheel.loadWheelConfig(1); break;
                 case 'Digit7': this.wheel.loadWheelConfig(2); break;
                 case 'Digit8': this.wheel.loadWheelConfig(3); break;

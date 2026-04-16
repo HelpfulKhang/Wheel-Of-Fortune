@@ -98,7 +98,7 @@ export class Wheel {
         // Áp dụng scale riêng cho Bonus Wheel
         this.group.scale.set(this.bonusWheelScale);
 
-        const bonusSprite = new PIXI.Sprite(this.textures['bouns round']);
+        const bonusSprite = new PIXI.Sprite(this.textures['bonus round']);
         bonusSprite.anchor.set(0.5);
         this.spinContainer.addChild(bonusSprite);
     }
