@@ -1,9 +1,9 @@
 [
   "Bankrupt",
-  "2500",
+  "5000",
   "500-Green",
   "900-Yellow",
-  "700-Red",
+  "Express",
   "600-Blue",
   "650-Orange",
   "500-Purple",
@@ -19,7 +19,7 @@
   "700-Blue",
   "Lose-a-Turn-White",
   "800-Red",
-  {"base": "900-Yellow", "overlay": "Wild-Card"},
+  { "base": "900-Yellow", "overlay": "Wild-Card" },
   "650-Pink",
   "500-Green",
   "900-Orange"
