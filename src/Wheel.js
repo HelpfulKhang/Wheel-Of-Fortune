@@ -14,7 +14,7 @@ export class Wheel {
         this.wheelScale = 0.5;
         this.friction = 0.988;
         this.rotationSpeed = 0;
-        this.replaceWedgeName = '500-Green'; // Wedge dùng để thay thế
+        this.replaceWedgeName = '700-Blue'; // Wedge dùng để thay thế
         this.currentRound = 1; 
         this.isBonus = false;
 
@@ -58,6 +58,9 @@ export class Wheel {
                 "650-Pink", "500-Green", "900-Orange"
             ]
         };
+
+        this.bonusLabels = ["P","I","N","&","W","I","N","3-STAR","A","M","E","R","I","C","A","'","S","STAR","G","A","M","E","2-STAR","S"];
+        this.bonusPrizes = [];
 
         this.init();
         this.loadWheelConfig(this.currentRound);
@@ -169,7 +172,10 @@ export class Wheel {
         // Bù 0.5 vì nón của bạn vẽ tâm ô ở góc k*15 độ
         let wedgeIndex = Math.floor((angle / this.angleStep) + 0.5) % this.totalWedges;
         
-        if (this.isBonus) return "BONUS ROUND";
+        if (this.isBonus) {
+            let wedgeIndex = Math.floor((angle / this.angleStep)) % 24;
+            return this.bonusLabels[wedgeIndex];
+        }
     
         const item = this.configs[this.currentRound || 1][wedgeIndex];
         const wedgeName = typeof item === 'string' ? item : item.base;
@@ -205,5 +211,23 @@ export class Wheel {
             sprite.texture = this.textures[backTextureName];
             gsap.to(wrapper.scale, { x: 1, duration: 0.5, onComplete });
         }});
+    }
+
+    // Hàm xào giải thưởng
+    shuffleBonusPrizes(hasMDW) {
+        let prizes = [
+            ...Array(5).fill(25000), ...Array(5).fill(30000),
+            ...Array(4).fill(35000), ...Array(3).fill(40000),
+            ...Array(3).fill(45000), ...Array(3).fill(50000)
+        ];
+        // Nếu có MDW thì 100k thành 1 triệu, không thì là 100k
+        prizes.push(hasMDW ? 1000000 : 100000);
+
+        // Fisher-Yates Shuffle
+        for (let i = prizes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [prizes[i], prizes[j]] = [prizes[j], prizes[i]];
+        }
+        this.bonusPrizes = prizes;
     }
 }

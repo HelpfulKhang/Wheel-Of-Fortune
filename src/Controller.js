@@ -53,9 +53,13 @@ export class Controller {
                     break;
 
                 // --- ĐIỂM SỐ & LƯỢT CHƠI ---
-                case 'Enter': 
-                    this.handleScoreLogic(currentWedge);
-                    break;
+                case 'Enter': {
+                    if (this.wheel.isBonus) {
+                        this.revealBonusEnvelope();
+                    } else {
+                        this.handleScoreLogic(currentWedge);
+                    }
+                } break;
                 case 'KeyB': // Bankrupt
                     this.sounds.bankrupt.play();
                     this.scoreBoard.bankrupt();
@@ -108,7 +112,12 @@ export class Controller {
                 case 'Digit7': this.wheel.loadWheelConfig(2); break;
                 case 'Digit8': this.wheel.loadWheelConfig(3); break;
                 case 'Digit9': this.wheel.loadWheelConfig(4); break;
-                case 'Digit0': this.wheel.loadBonusWheel(); break;
+                case 'Digit0': {
+                    const activePlayer = this.scoreBoard.players[this.scoreBoard.currentPlayerIndex];
+                    const hasMDW = activePlayer.inventory.includes("MDW");
+                    this.wheel.loadBonusWheel();
+                    this.wheel.shuffleBonusPrizes(hasMDW);
+                } break;
                 case 'Digit5': this.openFileExplorer(); break;
             }
         });
@@ -159,8 +168,6 @@ export class Controller {
             this.mysteryOutcomes = firstIs10k 
                 ? ['Mystery-10000', 'Mystery-Bankrupt'] 
                 : ['Mystery-Bankrupt', 'Mystery-10000'];
-                
-            console.log("Đã xác định vị trí Mystery tại các index:", this.mysteryIndices);
         } 
         else if (this.mysteryState === 2) {
             // Lật ô ngay dưới kim của người chơi
@@ -239,5 +246,37 @@ export class Controller {
         if (this.scoreBoard) {
             this.scoreBoard.update(this.wheel, this.tickers);
         }
+    }
+
+    // Hàm hiệu ứng Reveal
+    revealBonusEnvelope() {
+        const activeIdx = this.scoreBoard.currentPlayerIndex;
+        const wedgeIdx = this.getCurrentWedgeIndex(activeIdx);
+        const finalPrize = this.wheel.bonusPrizes[wedgeIdx];
+        
+        // Danh sách các giá trị để chạy hiệu ứng (lấy từ mảng prizes đã xào)
+        const randomPool = [25000, 30000, 35000, 40000, 45000, 50000, 100000, 1000000];
+        
+        let duration = 10000; // 10 giây
+        let startTime = Date.now();
+        
+        // Ẩn các mode khác, ép về mode 1 để xem điểm
+        this.scoreBoard.displayMode = 1;
+
+        const interval = setInterval(() => {
+            let elapsed = Date.now() - startTime;
+            
+            if (elapsed < duration) {
+                // Chạy số ngẫu nhiên
+                const tempVal = randomPool[Math.floor(Math.random() * randomPool.length)];
+                this.scoreBoard.players[activeIdx].score = tempVal;
+            } else {
+                // Kết thúc: Hiện giá trị thật
+                clearInterval(interval);
+                this.scoreBoard.players[activeIdx].score = finalPrize;
+                // Bạn có thể phát nhạc thắng lớn ở đây
+                // this.sounds.bigWin.play();
+            }
+        }, 80); // Cứ 80ms đổi số một lần
     }
 }
