@@ -66,7 +66,7 @@ export class PuzzleBoard {
                     style: { fontFamily: 'HelveticaNeueCondensedBlack', fontSize: 85, fill: 0x000000 }
                 });
                 letterText.anchor.set(0.5);
-                letterText.position.set(x + this.config.tileW / 2, y + this.config.tileH / 2 + 5);
+                letterText.position.set(x + this.config.tileW / 2, y + this.config.tileH / 2);
                 letterText.visible = false;
 
                 tileContainer.addChild(tileSprite, blueOverlay, letterText);
