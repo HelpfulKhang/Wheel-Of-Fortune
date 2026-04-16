@@ -1,0 +1,14 @@
+{
+  "Toss1": { "category": "CA DAO TỤC NGỮ", "text": "CÔNG THÀNH DANH TOẠI" },
+  "Toss2": { "category": "ĐỊA DANH", "text": "VỊNH HẠ LONG" },
+  "Round1": { "category": "DANH NGÔN", "text": "HỌC ĐI ĐÔI VỚI HÀNH" },
+  "Round2": { "category": "SỰ VẬT", "text": "CHIẾC ĐÀN ĐÔI" },
+  "Round3": { "category": "THÀNH NGỮ", "text": "ĂN QUẢ NHỚ KẺ TRỒNG CÂY" },
+  "Toss3": [
+    { "category": "ẨM THỰC", "text": "BÁNH CHƯNG" },
+    { "category": "ẨM THỰC", "text": "BÁNH GIÀY" },
+    { "category": "ẨM THỰC", "text": "BÁNH TÉT" }
+  ],
+  "Round4": { "category": "CON VẬT", "text": "CHIM CÁNH CỤT" },
+  "Bonus": { "category": "CHỦ ĐỀ ĐẶC BIỆT", "text": "KHOA HỌC KỸ THUẬT" }
+}

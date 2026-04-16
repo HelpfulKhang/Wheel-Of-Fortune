@@ -29,7 +29,8 @@ async function init() {
         const pbAssets = [
             { alias: 'pb-back', src: '/src/assets/Puzzleboard/backs/1.jpg' },
             { alias: 'tile-dark', src: '/src/assets/Puzzleboard/images/dark.jpg' },
-            { alias: 'tile-lit', src: '/src/assets/Puzzleboard/images/lit.jpg' }
+            { alias: 'tile-lit', src: '/src/assets/Puzzleboard/images/lit.jpg' },
+            { alias: 'tile-blue', src: '/src/assets/Puzzleboard/images/blue.jpg' }
         ];
         const loadedPb = await PIXI.Assets.load(pbAssets);
         Object.assign(textures, loadedPb);

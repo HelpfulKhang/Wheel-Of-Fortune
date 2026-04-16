@@ -8,9 +8,9 @@ export class ScoreBoard {
         this.app.stage.addChild(this.container);
 
         this.players = [
-            { name: "PLAYER 1", color: 0xff0000, score: 0, total: 0, inventory: [] },
-            { name: "PLAYER 2", color: 0xffff00, score: 0, total: 0, inventory: [] },
-            { name: "PLAYER 3", color: 0x0000ff, score: 0, total: 0, inventory: [] }
+            { name: "PLAYER 1", color: 0xff0000, score: 0, total: 0, inventory: [], toss3Solves: 0 },
+            { name: "PLAYER 2", color: 0xffff00, score: 0, total: 0, inventory: [], toss3Solves: 0 },
+            { name: "PLAYER 3", color: 0x0000ff, score: 0, total: 0, inventory: [], toss3Solves: 0 }
         ];
 
         this.boxes = [];
@@ -51,6 +51,17 @@ export class ScoreBoard {
             this.container.addChild(playerBox);
             this.boxes.push({ container: playerBox, text: contentText, header: header, nameText: nameText });
         });
+    }
+
+    // Đưa điểm vòng (score) của cả 3 người chơi về 0
+    resetRoundScores() {
+        this.players.forEach(p => p.score = 0);
+    }
+
+    // Cộng điểm vòng vào điểm tích lũy (total) cho người thắng, rồi reset vòng
+    bankScore(playerIndex) {
+        this.players[playerIndex].total += this.players[playerIndex].score;
+        this.resetRoundScores();
     }
 
     setActivePlayer(index) {
@@ -94,5 +105,20 @@ export class ScoreBoard {
         if (!this.players[this.currentPlayerIndex].inventory.includes(item)) {
             this.players[this.currentPlayerIndex].inventory.push(item);
         }
+    }
+
+    addTossupScore(type) {
+        const p = this.players[this.currentPlayerIndex];
+        if (type === 'Toss1') p.score += 1000;
+        else if (type === 'Toss2') p.score += 2000;
+        else if (type.startsWith('Toss3')) {
+            p.score += 2000;
+            p.toss3Solves++;
+            if (p.toss3Solves === 3) p.score += 4000; // Thưởng nếu giải đúng cả 3
+        }
+    }
+
+    resetToss3Streaks() {
+        this.players.forEach(p => p.toss3Solves = 0);
     }
 }
