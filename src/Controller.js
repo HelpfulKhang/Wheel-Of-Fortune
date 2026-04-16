@@ -274,11 +274,22 @@ export class Controller {
         const input = prompt("Nhập chữ cái (không dấu):");
         if (!input) return;
         const letter = removeAccents(input.toUpperCase().charAt(0));
+        
+        // matches tự động theo thứ tự từ trái sang phải
         const matches = this.puzzleBoard.activeTiles.filter(t => t.baseChar === letter && !t.isRevealed);
+        
         if (matches.length > 0) {
-            this.sounds.ding.play();
-            matches.forEach(t => this.puzzleBoard.revealTile(t, false));
-        } else this.sounds.buzzer.play();
+            matches.forEach((t, index) => {
+                // Delay 1 giây cho mỗi ô kế tiếp
+                gsap.delayedCall(index * 1, () => {
+                    this.sounds.ding.currentTime = 0; // Trả về 0 để tiếng ding vang lên đủ số lần
+                    this.sounds.ding.play();
+                    this.puzzleBoard.revealTile(t, false);
+                });
+            });
+        } else {
+            this.sounds.buzzer.play();
+        }
     }
 
     revealRSTLNEE() {
@@ -391,7 +402,14 @@ export class Controller {
     resetTossupState() { this.stopTossup(); this.tossupSfxPlayed = false; this.sounds.toss.pause(); }
     switchView(v) { const isP = v === 'puzzle'; this.wheel.group.visible = !isP; this.tickers.forEach(t => t.container.visible = !isP); this.puzzleBoard.group.visible = isP; }
     getCurrentWedgeIndex(pIdx) { let angle = (this.tickers[pIdx].baseAngle - this.wheel.spinContainer.rotation) % (Math.PI * 2); if (angle < 0) angle += Math.PI * 2; return Math.floor((angle / this.wheel.angleStep) + 0.5) % 24; }
-    toggleMenu() { this.sounds.menu.paused ? this.sounds.menu.play() : this.sounds.menu.pause(); }
+    toggleMenu() { 
+        if (this.sounds.menu.paused) {
+            this.sounds.menu.play();
+        } else {
+            this.sounds.menu.pause();
+            this.sounds.menu.currentTime = 0; // Chuyển về 0 để tạo hiệu ứng Stop
+        }
+    }
     openFileExplorer() {
         const i = prompt("Nạp cấu hình cho vòng quay nào? (1-4):", "1"); 
         if (i >= 1 && i <= 4) { this.targetIdx = parseInt(i); this.fileInput.click(); } 
