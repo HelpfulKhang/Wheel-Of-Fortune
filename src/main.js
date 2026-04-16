@@ -12,8 +12,13 @@ async function init() {
     await app.init({ width: 1920, height: 1080, backgroundColor: 0x050505, antialias: true });
     document.body.appendChild(app.canvas);
 
-    // Load tất cả texture (bao gồm overlay)
-    const textures = await loadTextures();
+    const WEDGE_LIST = ['2500', '3500', '500-Green', '500-Pink', '500-Purple', '5000', '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'Wild-Card', 'Half-Car', 'bouns round'];
+    
+    const textures = {};
+    for (const name of WEDGE_LIST) {
+        const folder = name === 'bouns round' ? 'wheel' : 'wedge';
+        textures[name] = await PIXI.Assets.load(`/src/assets/${folder}/${name}.png`);
+    }
 
     const wheel = new Wheel(app, textures);
     const tickers = setupTickers(app, wheel);
@@ -25,36 +30,20 @@ async function init() {
     });
 }
 
-async function loadTextures() {
-    const list = ['2500', '3500', '500-Green', '500-Pink', '500-Purple', '5000', '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'Wild-Card', 'Half-Car'];
-    const texs = {};
-    for (const name of list) {
-        texs[name] = await PIXI.Assets.load(`/src/assets/wedge/${name}.png`);
-    }
-    return texs;
-}
-
 function setupTickers(app, wheel) {
     const colors = [0xff0000, 0xffff00, 0x0000ff];
-    const tickerAngles = [-wheel.angleStep, 0, wheel.angleStep];
-    const tickers = [];
-
-    tickerAngles.forEach((angle, i) => {
+    const angles = [-wheel.angleStep, 0, wheel.angleStep];
+    return angles.map((angle, i) => {
         const g = new PIXI.Graphics().poly([-15, 0, 15, 0, 0, 50]).fill(colors[i]).stroke({ width: 3, color: 0xffffff });
-        
-        // SỬA LỖI LỆCH KIM: Tính tọa độ radial chuẩn
-        // Gốc của kim phải ở khoảng cách (totalRadius + 50) để mũi kim (dài 50) vừa chạm rim
+        // RADIAL MATH FIX: Tính X, Y dựa trên góc để kim hướng thẳng vào tâm
         const dist = wheel.totalRadius + 50;
         g.x = wheel.group.x + Math.sin(angle) * dist;
         g.y = wheel.group.y - Math.cos(angle) * dist;
-        
         g.rotation = angle;
         g.zIndex = 100;
         app.stage.addChild(g);
-        
-        tickers.push({ container: g, baseAngle: angle, lastStep: 0 });
+        return { container: g, baseAngle: angle, lastStep: 0 };
     });
-    return tickers;
 }
 
 init();
