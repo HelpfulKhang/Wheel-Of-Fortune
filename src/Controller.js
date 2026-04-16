@@ -1,6 +1,8 @@
 export class Controller {
-    constructor(wheel) {
+    constructor(wheel, scoreBoard, tickers) {
         this.wheel = wheel;
+        this.scoreBoard = scoreBoard;
+        this.tickers = tickers;
         this.isCharging = false;
         this.chargePower = 0;
         this.chargeDir = 1;
@@ -25,7 +27,7 @@ export class Controller {
                 case 'KeyQ': this.wheel.nudge(-1); break;
                 case 'KeyW': this.wheel.nudge(1); break;
                 case 'KeyC': this.toggleMenu(); break;
-                // Intro phím I đã bị loại bỏ ở đây
+                case 'ShiftLeft': this.scoreBoard.toggleMode(); break;
                 case 'Digit6': this.wheel.loadWheelConfig(1); break;
                 case 'Digit7': this.wheel.loadWheelConfig(2); break;
                 case 'Digit8': this.wheel.loadWheelConfig(3); break;
@@ -74,5 +76,18 @@ export class Controller {
             this.chargePower += 0.02 * this.chargeDir * delta;
             if (this.chargePower >= 1 || this.chargePower <= 0) this.chargeDir *= -1;
         }
+        if (this.scoreBoard) {
+            this.scoreBoard.update(this.wheel, this.tickers);
+        }
+    }
+
+    checkAllTickers() {
+        console.log("--- KẾT QUẢ KIỂM TRA KIM ---");
+        const labels = ["TRÁI (Đỏ)", "GIỮA (Vàng)", "PHẢI (Xanh)"];
+        
+        this.tickers.forEach((obj, i) => {
+            const result = this.wheel.getWedgeAtAngle(obj.baseAngle);
+            console.log(`${labels[i]}: ${result}`);
+        });
     }
 }

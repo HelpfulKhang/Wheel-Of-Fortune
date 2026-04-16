@@ -14,6 +14,7 @@ export class Wheel {
         this.wheelScale = 0.5;
         this.friction = 0.988;
         this.rotationSpeed = 0;
+        this.currentRound = 1;  
         this.isBonus = false;
 
         // THÊM HỆ SỐ SCALE RIÊNG CHO BONUS WHEEL
@@ -21,113 +22,44 @@ export class Wheel {
 
         this.configs = {
             1: [
-                "Bankrupt",
-                "2500",
-                "500-Green",
-                "900-Yellow",
-                "700-Red",
-                "600-Blue",
-                "650-Orange",
-                "500-Purple",
-                "700-Yellow",
-                "MDM-Front",
-                "600-Red",
-                "550-Blue",
-                "500-Green",
-                "600-Pink",
-                "Bankrupt",
-                "650-Purple",
-                "500-Blue",
-                "700-Blue",
-                "Lose-a-Turn-White",
-                "800-Red",
-                {"base": "900-Yellow", "overlay": "Wild-Card"},
-                "650-Pink",
-                "500-Green",
-                "900-Orange"
-              ],
+                'Bankrupt', '2500', '500-Green', '900-Yellow', '700-Red', '600-Blue',
+                'Power', '500-Purple', '700-Yellow', 'MDW-Front',
+                '600-Red', '550-Blue', '650-Orange', '600-Pink', 'Bankrupt', '650-Purple',
+                '500-Pink',
+                '700-Blue', 'Lose-a-Turn-White', '800-Red',
+                { base: "900-Yellow", overlay: "Wild-Card" },
+                '650-Pink', '500-Green', '900-Orange'
+            ],
             2: [
-                "Bankrupt",
-                "3500",
-                "500-Green",
-                "900-Yellow",
-                "700-Red",
-                "Mystery",
-                "650-Orange",
-                "500-Purple",
-                "700-Yellow",
-                "MDM-Front",
-                "600-Red",
-                "550-Blue",
-                "500-Green",
-                "600-Pink",
-                "Bankrupt",
-                "650-Purple",
-                "500-Blue",
-                "Mystery",
-                "Lose-a-Turn-White",
-                "800-Red",
+                "Bankrupt", "3500", "500-Green", "900-Yellow", "700-Red", "Mystery",
+                "650-Orange", "500-Purple", "700-Yellow", "MDW-Front", 
+                "600-Red", "550-Blue", "500-Green", "600-Pink", "Bankrupt", "650-Purple",
+                "500-Pink", 
+                "Mystery", "Lose-a-Turn-White", "800-Red",
                 { "base": "900-Yellow", "overlay": "Wild-Card" },
-                "650-Pink",
-                "500-Green",
-                "900-Orange"
-              ],
+                "650-Pink", "500-Green", "900-Orange"
+            ],
             3: [
-                "Bankrupt",
-                "3500",
-                "500-Green",
-                "900-Yellow",
-                "Express",
-                "600-Blue",
-                "650-Orange",
-                "500-Purple",
-                "700-Yellow",
-                "MDM-Front",
-                "600-Red",
-                "550-Blue",
-                "500-Green",
-                "600-Pink",
-                "Bankrupt",
-                "650-Purple",
-                "500-Blue",
-                "700-Blue",
-                "Lose-a-Turn-White",
-                "800-Red",
+                "Bankrupt", "3500", "500-Green", "900-Yellow", "Express", "600-Blue",
+                "650-Orange", "500-Purple", "700-Yellow", "MDW-Front", 
+                "600-Red", "550-Blue", "500-Green", "600-Pink", "Bankrupt", "650-Purple",
+                "500-Pink", 
+                "700-Blue", "Lose-a-Turn-White", "800-Red",
                 { "base": "900-Yellow", "overlay": "Wild-Card" },
-                "650-Pink",
-                "500-Green",
-                "900-Orange"
-              ],
+                "650-Pink", "500-Green", "900-Orange"
+            ],
             4: [
-                "Bankrupt",
-                "2500",
-                "500-Green",
-                "900-Yellow",
-                "700-Red",
-                "600-Blue",
-                "650-Orange",
-                "500-Purple",
-                "700-Yellow",
-                "500-Pink",
-                "600-Red",
-                "550-Blue",
-                "500-Green",
-                "600-Pink",
-                "Bankrupt",
-                "650-Purple",
-                "500-Blue",
-                "700-Blue",
-                "Lose-a-Turn-White",
-                "800-Red",
-                "900-Yellow",
-                "650-Pink",
-                "500-Green",
-                "900-Orange"
-              ]
+                "Bankrupt", "5000", "500-Green", "900-Yellow", "700-Red", "600-Blue",
+                "650-Orange", "500-Purple", "700-Yellow", "500-Pink",
+                "600-Red", "550-Blue", "500-Green", "600-Pink", "Bankrupt", "650-Purple",
+                "500-Pink", 
+                "700-Blue", "Lose-a-Turn-White", "800-Red", "900-Yellow",
+                "650-Pink", "500-Green", "900-Orange"
+            ]
         };
 
         this.init();
-        this.loadWheelConfig(1);
+        this.loadWheelConfig(this.currentRound);
     }
 
     init() {
@@ -226,5 +158,35 @@ export class Wheel {
     get totalRadius() { 
         const currentScale = this.isBonus ? this.bonusWheelScale : this.wheelScale;
         return (this.wedgeHeight + this.hubRadius) * currentScale; 
+    }
+
+    getWedgeAtAngle(pointerAngle) {
+        let totalRotation = this.spinContainer.rotation;
+        let angle = (pointerAngle - totalRotation) % (Math.PI * 2);
+        if (angle < 0) angle += Math.PI * 2;
+    
+        // Bù 0.5 vì nón của bạn vẽ tâm ô ở góc k*15 độ
+        let wedgeIndex = Math.floor((angle / this.angleStep) + 0.5) % this.totalWedges;
+        
+        if (this.isBonus) return "BONUS ROUND";
+    
+        const item = this.configs[this.currentRound || 1][wedgeIndex];
+        const wedgeName = typeof item === 'string' ? item : item.base;
+    
+        // XỬ LÝ MDW VÀ VAULT (Chia ô 15 độ thành 3 phần 5 độ)
+        if (wedgeName === 'MDW-Front' || wedgeName === 'Vault') {
+            let localAngle = (angle / this.angleStep + 0.5) % 1;
+            let subIndex = Math.floor(localAngle * 3); // 0: Trái, 1: Giữa, 2: Phải
+    
+            if (wedgeName === 'MDW-Front') {
+                const mdwParts = ["BANKRUPT", "1 MILLION", "BANKRUPT"];
+                return mdwParts[subIndex];
+            } else {
+                const vaultParts = ["BANKRUPT", "VAULT", "LOSE A TURN"];
+                return vaultParts[subIndex];
+            }
+        }
+    
+        return wedgeName.toUpperCase().replace(/-/g, ' ');
     }
 }
