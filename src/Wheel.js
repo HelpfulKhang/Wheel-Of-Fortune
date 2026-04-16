@@ -14,7 +14,8 @@ export class Wheel {
         this.wheelScale = 0.5;
         this.friction = 0.988;
         this.rotationSpeed = 0;
-        this.currentRound = 1;  
+        this.replaceWedgeName = '500-Green'; // Wedge dùng để thay thế
+        this.currentRound = 1; 
         this.isBonus = false;
 
         // THÊM HỆ SỐ SCALE RIÊNG CHO BONUS WHEEL
@@ -188,5 +189,21 @@ export class Wheel {
         }
     
         return wedgeName.toUpperCase().replace(/-/g, ' ');
+    }
+
+    // Thêm phương thức lật/thay thế wedge
+    updateWedge(index, newConfig) {
+        this.configs[this.currentRound][index] = newConfig;
+        this.buildWedges(this.configs[this.currentRound]);
+    }
+
+    flipWedgeAnimation(index, backTextureName, onComplete) {
+        const wrapper = this.spinContainer.children[index];
+        const sprite = wrapper.children[0]; // Wedge gốc
+        
+        gsap.to(wrapper.scale, { x: 0, duration: 0.5, onComplete: () => {
+            sprite.texture = this.textures[backTextureName];
+            gsap.to(wrapper.scale, { x: 1, duration: 0.5, onComplete });
+        }});
     }
 }

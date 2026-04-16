@@ -13,9 +13,9 @@ async function init() {
     await app.init({ width: 1920, height: 1080, backgroundColor: 0x050505, antialias: true });
     document.body.appendChild(app.canvas);
 
-    const WEDGE_LIST = ['2500', '3500', '500-Green', '500-Pink', '500-Purple', '5000', '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'MDW-Front', 'Power', 'Wild-Card', 'bouns round'];
+    const WEDGE_LIST = ['2500', '3500', '500-Green', '500-Pink', '500-Purple', '5000', '550-Blue', '600-Blue', '600-Pink', '600-Red', '600-Yellow', '650-Orange', '650-Pink', '650-Purple', '700-Blue', '700-Red', '700-Yellow', '800-Red', '900-Orange', '900-Yellow', 'Bankrupt', 'Express', 'Free-Play', 'Lose-a-Turn-White', 'Mystery', 'Mystery-10000', 'Mystery-Bankrupt', 'MDW-Front', 'MDW-Back', 'Power', 'Wild-Card', 'bouns round'];
     await PIXI.Assets.load([
-        { alias: 'HelveticaNeueCondensedBlack', src: '/src/assets/font/10 HelveticaNeue/HelveticaNeueCondensedBlack.ttf' }
+        { alias: 'HelveticaNeueCondensedBlack', src: '/src/assets/font/10 HelveticaNeue/HelveticaNeueCondensedBlack.ttf' },
     ]);
 
     const textures = {};
