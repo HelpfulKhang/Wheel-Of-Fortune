@@ -4,83 +4,69 @@ export class PuzzleBoard {
     constructor(app, textures) {
         this.app = app;
         this.textures = textures;
-        this.container = new PIXI.Container();
-        this.container.visible = false; // Mặc định ẩn
+        this.group = new PIXI.Container();
+        this.group.visible = false;
 
-        // --- THÔNG SỐ HIỆU CHUẨN (Bạn hãy chỉnh các số này để vừa khít lưới) ---
+        // Cấu hình thông số (Bạn có thể điều chỉnh boardX, boardY tùy ý)
         this.config = {
-            boardX: 255,      // Vị trí X của cả bảng
-            boardY: 135,      // Vị trí Y (để cao như bạn muốn)
-            tileW: 88,        // Chiều rộng mỗi ô
-            tileH: 120,       // Chiều cao mỗi ô
-            gapX: 4,          // Khoảng cách giữa các ô theo chiều ngang
-            gapY: 5,          // Khoảng cách giữa các ô theo chiều dọc
-            rows: [12, 14, 14, 12] // Cấu trúc lưới
+            boardX: 325,      
+            boardY: 135,      
+            tileW: 88,        
+            tileH: 120,       
+            gapX: 4,          
+            gapY: 5,          
+            rows: [12, 14, 14, 12],
+            gridColor: 0x006400, // Màu xanh lá đậm (Forest Green) cho sang
+            gridThickness: 4     // Độ dày viền lưới
         };
 
-        this.tiles = []; // Lưu trữ để sau này gọi lật chữ
+        this.tiles = [];
         this.init();
-        this.app.stage.addChild(this.container);
+        this.app.stage.addChild(this.group);
     }
 
     init() {
-        // 1. Nền của Puzzle Board (1.jpg)
-        const background = new PIXI.Sprite(this.textures['pb-back']);
-        background.width = 1920;
-        background.height = 1080;
-        this.container.addChild(background);
+        // 1. Nền gỗ (1.jpg)
+        const bg = new PIXI.Sprite(this.textures['pb-back']);
+        bg.width = 1920; 
+        bg.height = 1080;
+        this.group.addChild(bg);
 
-        // 2. Lưới viền ô chữ (a1.gif)
-        // Chúng ta đặt lưới này lên trước để canh tọa độ, 
-        // nhưng thực tế các ô chữ sẽ nằm dưới hoặc trên tùy bạn.
-        this.gridFrame = new PIXI.Sprite(this.textures['pb-grid']);
-        this.gridFrame.position.set(this.config.boardX, this.config.boardY);
-        // Lưu ý: Bạn có thể cần set width/height cho gridFrame nếu ảnh gốc không đúng 1920
-        this.container.addChild(this.gridFrame);
+        // 2. Tự vẽ lưới (Thay thế cho a1.gif)
+        const gridGraphics = new PIXI.Graphics();
+        this.group.addChild(gridGraphics);
 
-        // 3. Tạo các ô (Tiles)
-        this.createGrid();
-    }
-
-    createGrid() {
-        this.tileContainer = new PIXI.Container();
-        this.container.addChild(this.tileContainer);
+        // 3. Container chứa các ô tile (Nằm trên lưới)
+        const tileContainer = new PIXI.Container();
+        this.group.addChild(tileContainer);
 
         this.config.rows.forEach((count, rowIndex) => {
-            // Tính toán để căn giữa hàng 12 so với hàng 14
+            // Cân giữa hàng 12 so với hàng 14
             const rowOffsetX = (rowIndex === 0 || rowIndex === 3) ? (this.config.tileW + this.config.gapX) : 0;
             
             for (let i = 0; i < count; i++) {
-                const tile = new PIXI.Container();
-                
-                // Vị trí X, Y của từng ô
-                tile.x = this.config.boardX + rowOffsetX + i * (this.config.tileW + this.config.gapX) + 15; // +15 là lề trái
-                tile.y = this.config.boardY + rowIndex * (this.config.tileH + this.config.gapY) + 15; // +15 là lề trên
+                const x = this.config.boardX + rowOffsetX + i * (this.config.tileW + this.config.gapX);
+                const y = this.config.boardY + rowIndex * (this.config.tileH + this.config.gapY);
 
-                // Sprite nền ô (mặc định dùng dark.jpg)
-                const sprite = new PIXI.Sprite(this.textures['tile-dark']);
-                sprite.width = this.config.tileW;
-                sprite.height = this.config.tileH;
-                
-                tile.addChild(sprite);
-                this.tileContainer.addChild(tile);
+                // --- Vẽ viền lưới xung quanh vị trí ô này ---
+                // Vẽ một hình chữ nhật lớn hơn ô tile một chút để tạo cảm giác lưới bao quanh
+                gridGraphics.poly([
+                    x - 2, y - 2, 
+                    x + this.config.tileW + 2, y - 2, 
+                    x + this.config.tileW + 2, y + this.config.tileH + 2, 
+                    x - 2, y + this.config.tileH + 2
+                ])
+                .stroke({ width: this.config.gridThickness, color: this.config.gridColor });
 
-                // Lưu vào mảng 2D để quản lý: tiles[hàng][cột]
-                if (!this.tiles[rowIndex]) this.tiles[rowIndex] = [];
-                this.tiles[rowIndex][i] = {
-                    container: tile,
-                    sprite: sprite,
-                    state: 'dark' // 'dark' | 'lit' | 'letter'
-                };
+                // --- Tạo ô nắp (Tile) ---
+                const tile = new PIXI.Sprite(this.textures['tile-dark']);
+                tile.width = this.config.tileW;
+                tile.height = this.config.tileH;
+                tile.position.set(x, y);
+
+                tileContainer.addChild(tile);
+                this.tiles.push(tile);
             }
-        });
-    }
-
-    // Hàm để bạn test nhanh vị trí ô
-    toggleTestMode() {
-        this.tiles.flat().forEach(t => {
-            t.sprite.texture = (t.state === 'dark') ? this.textures['tile-lit'] : this.textures['tile-dark'];
-            t.state = (t.state === 'dark') ? 'lit' : 'dark';
         });
     }
 }
