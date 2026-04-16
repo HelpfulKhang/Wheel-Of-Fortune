@@ -66,7 +66,6 @@ export class Wheel {
                 if (overlayName === 'Wild-Card') {
                     overlay.scale.set(0.6); // Dọc
                 } else if (overlayName === 'Half-Car') {
-                    overlay.rotation = Math.PI / 2; // Ngang xoay dọc
                     overlay.scale.set(0.5);
                 }
                 wrapper.addChild(overlay);
@@ -75,7 +74,7 @@ export class Wheel {
         });
     }
 
-    spin(power) { this.rotationSpeed = 0.05 + (power * 0.35); }
+    spin(power) { this.rotationSpeed = 0 + (power * 10); }
 
     nudge(dir) {
         const target = Math.round(this.spinContainer.rotation / this.angleStep) * this.angleStep + (this.angleStep * dir);
