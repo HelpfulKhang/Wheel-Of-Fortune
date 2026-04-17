@@ -178,7 +178,7 @@ export class PuzzleBoard {
     showCategory(categoryName) {
         this.categoryGroup.removeChildren();
         const boxWidth = 600; const boxHeight = 70;
-        const box = new PIXI.Graphics().roundRect(-boxWidth/2, -boxHeight/2, boxWidth, boxHeight, 30).fill(0x00008B).stroke({width:3, color:0xf9f295});
+        const box = new PIXI.Graphics().roundRect(-boxWidth/2, -boxHeight/2, boxWidth, boxHeight, 35).fill(0x000000).stroke({width:3, color:0xf9f295});
         const catText = new PIXI.Text({ text: categoryName.toUpperCase(), style: {fontFamily:'HelveticaNeueCondensedBlack', fontSize:40, fill:0xffffff} });
         catText.anchor.set(0.5);
         this.categoryGroup.addChild(box, catText);

@@ -62,7 +62,9 @@ export class Controller {
             think: new Audio('/src/assets/sound/think.mp3'),
             think1: new Audio('/src/assets/sound/think1.mp3'),
             '20s': new Audio('/src/assets/sound/20s.mp3'),
-            menu: new Audio('/src/assets/sound/menu.mp3')
+            menu: new Audio('/src/assets/sound/menu.mp3'),
+            loss: new Audio('/src/assets/sound/loss.mp3'),
+            bonussolve: new Audio('/src/assets/sound/bonussolve.mp3'),
         };
         this.sounds.menu.loop = true;
 
@@ -116,17 +118,19 @@ export class Controller {
                     const itemEqual = this.puzzleSequence[this.currentPuzzleIdx];
                     if (!itemEqual) break; 
                     
-                    const idEqual = itemEqual.id; // Khai báo id để tránh lỗi undefined
+                    const idEqual = itemEqual.id.toLowerCase();
                     
-                    if (idEqual.toLowerCase().includes('toss')) {
+                    if (idEqual.includes('bonus')) {
+                        this.sounds.loss.play(); // Phát nhạc thua cuộc cho vòng Bonus
+                    } else if (idEqual.includes('toss')) {
                         this.sounds.tosssolve.play();
-                        this.sounds.toss.pause(); // Tắt nhạc Toss
+                        this.sounds.toss.pause();
                     } else {
                         this.sounds.solve.play();
                         if (this.scoreBoard.resetToss3Streaks) this.scoreBoard.resetToss3Streaks();
                     }
                     
-                    this.stopTossup(); // Dọn dẹp bộ đếm giờ và reset trạng thái Tossup
+                    this.stopTossup();
                     break;
                 case 'Backspace': 
                     this.handleSolve(); 
@@ -228,26 +232,23 @@ export class Controller {
         const item = this.puzzleSequence[this.currentPuzzleIdx];
         if (!item) return;
 
-        const id = item.id; 
+        const id = item.id.toLowerCase(); 
         let isRegularRound = false;
 
-        if (id.toLowerCase().includes('toss')) {
+        if (id.includes('bonus')) {
+            this.sounds.bonussolve.play(); // Nhạc thắng vòng Bonus
+        } else if (id.includes('toss')) {
             this.sounds.tosssolve.play();
             this.sounds.toss.pause();
-            if (this.scoreBoard.addTossupScore) this.scoreBoard.addTossupScore(id);
+            if (this.scoreBoard.addTossupScore) this.scoreBoard.addTossupScore(item.id);
         } else {
             this.sounds.solve.play();
             if (this.scoreBoard.resetToss3Streaks) this.scoreBoard.resetToss3Streaks();
-            
-            // Kiểm tra xem có phải vòng thường (Round1, Round2, Round3, Round4) không
-            if (id.toLowerCase().includes('round')) {
-                isRegularRound = true;
-            }
+            if (id.includes('round')) isRegularRound = true;
         }
 
-        // CỘNG ĐIỂM VÀO TÍCH LŨY VÀ RESET ĐIỂM VÒNG
+        // Cộng điểm và giải phóng bảng
         if (this.scoreBoard.bankScore) {
-            // Truyền cờ isRegularRound vào để Scoreboard xét duyệt luật 1000 điểm tối thiểu
             this.scoreBoard.bankScore(this.scoreBoard.currentPlayerIndex, isRegularRound);
         }
 

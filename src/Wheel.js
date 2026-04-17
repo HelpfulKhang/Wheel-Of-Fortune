@@ -74,7 +74,7 @@ export class Wheel {
         this.spinContainer = new PIXI.Container();
         this.group.addChild(this.spinContainer);
 
-        this.hub = new PIXI.Graphics().circle(0, 0, this.hubRadius).fill(0xffd700).stroke({ width: 10, color: 0xffffff, alpha: 0.5 });
+        this.hub = new PIXI.Graphics().circle(0, 0, this.hubRadius).fill(0xf9f295).stroke({ width: 10, color: 0xffffff, alpha: 0.5 });
         this.group.addChild(this.hub);
 
         this.app.stage.addChild(this.group);
