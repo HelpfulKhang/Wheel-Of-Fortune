@@ -3,8 +3,12 @@ import { gsap } from 'gsap';
 // Hàm helper chuẩn hóa Tiếng Việt (Bỏ dấu để reveal không dấu)
 const removeAccents = (str) => {
     return str.normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+              // Chỉ loại bỏ 5 dấu thanh: 
+              // \u0300 (huyền), \u0301 (sắc), \u0303 (ngã), \u0309 (hỏi), \u0323 (nặng)
+              .replace(/[\u0300\u0301\u0303\u0309\u0323]/g, '')
+              // Nối các ký tự gốc và dấu mũ/trăng/móc trở lại thành 1 ký tự chuẩn (NFC)
+              // Ví dụ: A + ˆ = Â
+              .normalize('NFC'); 
 };
 
 export class Controller {
@@ -108,6 +112,21 @@ export class Controller {
                 case 'Equal': 
                     this.puzzleBoard.revealAll(true); 
                     if (this.scoreBoard.resetRoundScores) this.scoreBoard.resetRoundScores();
+                    
+                    const itemEqual = this.puzzleSequence[this.currentPuzzleIdx];
+                    if (!itemEqual) break; 
+                    
+                    const idEqual = itemEqual.id; // Khai báo id để tránh lỗi undefined
+                    
+                    if (idEqual.toLowerCase().includes('toss')) {
+                        this.sounds.tosssolve.play();
+                        this.sounds.toss.pause(); // Tắt nhạc Toss
+                    } else {
+                        this.sounds.solve.play();
+                        if (this.scoreBoard.resetToss3Streaks) this.scoreBoard.resetToss3Streaks();
+                    }
+                    
+                    this.stopTossup(); // Dọn dẹp bộ đếm giờ và reset trạng thái Tossup
                     break;
                 case 'Backspace': 
                     this.handleSolve(); 
@@ -210,6 +229,8 @@ export class Controller {
         if (!item) return;
 
         const id = item.id; 
+        let isRegularRound = false;
+
         if (id.toLowerCase().includes('toss')) {
             this.sounds.tosssolve.play();
             this.sounds.toss.pause();
@@ -217,11 +238,17 @@ export class Controller {
         } else {
             this.sounds.solve.play();
             if (this.scoreBoard.resetToss3Streaks) this.scoreBoard.resetToss3Streaks();
+            
+            // Kiểm tra xem có phải vòng thường (Round1, Round2, Round3, Round4) không
+            if (id.toLowerCase().includes('round')) {
+                isRegularRound = true;
+            }
         }
 
-        // CỘNG ĐIỂM VÀO TÍCH LŨY (TOTAL) VÀ RESET ĐIỂM VÒNG (SCORE)
+        // CỘNG ĐIỂM VÀO TÍCH LŨY VÀ RESET ĐIỂM VÒNG
         if (this.scoreBoard.bankScore) {
-            this.scoreBoard.bankScore(this.scoreBoard.currentPlayerIndex);
+            // Truyền cờ isRegularRound vào để Scoreboard xét duyệt luật 1000 điểm tối thiểu
+            this.scoreBoard.bankScore(this.scoreBoard.currentPlayerIndex, isRegularRound);
         }
 
         this.puzzleBoard.revealAll(true);

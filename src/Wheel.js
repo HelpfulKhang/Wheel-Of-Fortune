@@ -28,7 +28,7 @@ export class Wheel {
                 '600-Red', '550-Blue', '650-Orange', '600-Pink', 'Bankrupt', '650-Purple',
                 '500-Pink',
                 '700-Blue', 'Lose-a-Turn-White', '800-Red',
-                { base: "900-Yellow", overlay: "Wild-Card" },
+                { "base": "900-Yellow", "overlay": "Wild-Card" },
                 '650-Pink', '500-Green', '900-Orange'
             ],
             2: [

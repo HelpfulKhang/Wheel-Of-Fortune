@@ -3,8 +3,12 @@ import { gsap } from 'gsap';
 
 const removeAccents = (str) => {
     return str.normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+              // Chỉ loại bỏ 5 dấu thanh: 
+              // \u0300 (huyền), \u0301 (sắc), \u0303 (ngã), \u0309 (hỏi), \u0323 (nặng)
+              .replace(/[\u0300\u0301\u0303\u0309\u0323]/g, '')
+              // Nối các ký tự gốc và dấu mũ/trăng/móc trở lại thành 1 ký tự chuẩn (NFC)
+              // Ví dụ: A + ˆ = Â
+              .normalize('NFC'); 
 };
 
 export class PuzzleBoard {

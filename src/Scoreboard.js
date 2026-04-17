@@ -59,8 +59,15 @@ export class ScoreBoard {
     }
 
     // Cộng điểm vòng vào điểm tích lũy (total) cho người thắng, rồi reset vòng
-    bankScore(playerIndex) {
-        this.players[playerIndex].total += this.players[playerIndex].score;
+    bankScore(playerIndex, isRegularRound = false) {
+        let currentScore = this.players[playerIndex].score;
+        
+        // LUẬT HOUSE MINIMUM: Nếu là vòng thường và điểm < 1000, mặc định cộng 1000
+        if (isRegularRound && currentScore < 1000) {
+            currentScore = 1000;
+        }
+
+        this.players[playerIndex].total += currentScore;
         this.resetRoundScores();
     }
 
